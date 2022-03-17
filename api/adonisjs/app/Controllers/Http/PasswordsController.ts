@@ -25,11 +25,11 @@ export default class PasswordsController {
 
     await Mail.send((message) => {
       message
-        .from('no-reply@roleplay.com')
+        .from('no-reply@api.com')
         .to(email)
-        .subject('Roleplay: Recuperação de Senha')
+        .subject('API: Recuperação de Senha')
         .htmlView('emails/forgotpassword', {
-          productName: 'Roleplay',
+          productName: 'API',
           name: user.username,
           resetPasswordUrl: resetPasswordUrlWithToken,
         })

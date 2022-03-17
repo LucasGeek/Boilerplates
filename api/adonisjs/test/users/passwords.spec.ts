@@ -19,9 +19,9 @@ test.group('Password', (group) => {
         },
       ])
       assert.deepEqual(message.from, {
-        address: 'no-reply@roleplay.com',
+        address: 'no-reply@api.com',
       })
-      assert.equal(message.subject, 'Roleplay: Recuperação de Senha')
+      assert.equal(message.subject, 'API: Recuperação de Senha')
       assert.include(message.html!, user.username)
     })
 
@@ -46,9 +46,9 @@ test.group('Password', (group) => {
         },
       ])
       assert.deepEqual(message.from, {
-        address: 'no-reply@roleplay.com',
+        address: 'no-reply@api.com',
       })
-      assert.equal(message.subject, 'Roleplay: Recuperação de Senha')
+      assert.equal(message.subject, 'API: Recuperação de Senha')
       assert.include(message.html!, user.username)
     })
 
