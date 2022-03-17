@@ -6,6 +6,19 @@ services:
     image: postgres:alpine
     volumes:
       - postgres_volume:/var/lib/postgresql/data
+      - ./dockerConfig/postgres-dev-init.sql:/docker-entrypoint-initdb.d/init.sql # will setup dev database api for us
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+
+  postgres-test:
+    container_name: postgres-test
+    image: postgres:alpine
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+      - ./dockerConfig/postgres-testing-init.sql:/docker-entrypoint-initdb.d/init.sql # will setup dev database api for us
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -20,8 +33,27 @@ services:
     ports:
       - 6379:6379
 
-  adonis_app:
-    container_name: adonis_app
+  prod:
+    container_name: prod
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    build:
+      context: .
+      target: production
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
+    environment:
+      - PG_HOST=postgres
+      - REDIS_HOST=redis
+    volumes:
+      - ./:/home/node/app
+
+  dev:
+    container_name: dev
     restart: always
     depends_on:
       - postgres
@@ -40,6 +72,38 @@ services:
     volumes:
       - ./:/home/node/app
     command: dumb-init node ace serve --watch --node-args="--inspect=0.0.0.0"
+
+  test:
+    container_name: test
+    depends_on:
+      - postgres-test
+      - redis
+    build:
+      context: .
+      target: test
+    ports:
+      - 3333:80
+    environment:
+      - PORT:80
+      - HOST=0.0.0.0
+      - NODE_ENV='testing'
+      - APP_KEY='MI3NFG3E6PyOOhlahC7_xuaH2gpVPo58'
+      - DRIVE_DISK='local'
+      - DB_CONNECTION='pg'
+      - PG_HOST='postgres'
+      - PG_PORT=5432
+      - PG_USER='testing'
+      - PG_PASSWORD='testing'
+      - PG_DB_NAME='testing_api'
+      - SMTP_HOST='smtp.mailtrap.io'
+      - SMTP_PORT=2525
+      - SMTP_USERNAME='b0a20fbe9eef5f'
+      - SMTP_PASSWORD='da6960f220c5b3'
+      - CACHE_VIEWS=false
+      - REDIS_HOST=redis
+      - MAIL_TYPE='smtp'
+    volumes:
+      - ./:/home/node/app
 
 volumes:
   postgres_volume:
